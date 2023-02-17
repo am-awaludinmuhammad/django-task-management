@@ -1,0 +1,30 @@
+task management app
+
+
+DB
+task
+	id serial
+	title varchar255
+	description text
+	user_id integer
+critane:
+v1:
+	crud task
+
+v2:
+- login admin
+- tambah role
+	1. admin
+	2. pm
+	3. normal
+- permission
+	1. admin: full access
+	2. pm: crud task
+	3. normal: view task, update status task
+
+============
+referensi
+https://stackoverflow.com/questions/5895588/django-multivaluedictkeyerror-error-how-do-i-deal-with-it
+https://djangowaves.com/tips-tricks/gitignore-for-a-django-project/
+https://simpleisbetterthancomplex.com/tutorial/2016/08/02/how-to-split-views-into-multiple-files.html
+
