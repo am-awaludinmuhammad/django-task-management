@@ -1,18 +1,31 @@
 from django.shortcuts import render, redirect
 from ..models import Task
+from django.http import JsonResponse
+from django.forms.models import model_to_dict
+
 
 def index(request):
-    tasks = Task.objects.all()
-    return render(request, 'tasks/index.html', {'tasks': tasks})
+    context = {
+        'tasks': Task.objects.all(),
+        'states': Task.states
+    }
+    return render(request, 'tasks/index.html', context)
 
 def create(request):
     if request.method == 'POST':
         values = { key:value for key,value in request.POST.items() }
         values['complete'] =  request.POST.get('complete', False)
+        values['state'] = 'new'
         if 'csrfmiddlewaretoken' in values: del values['csrfmiddlewaretoken']
 
-        Task.objects.create(**values)
-        return redirect('tasks')
+        rec = Task.objects.create(**values)
+        data = model_to_dict(rec)
+
+        return JsonResponse({
+            'success': True,
+            'msg': 'Task has been created',
+            'data': data
+        })
 
     return render(request, 'tasks/create.html')
 

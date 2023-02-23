@@ -1,17 +1,64 @@
 {% extends 'layout/base.html' %}
 {% block content %}
+<div class="modal fade" id="modal" tabindex="-1" aria-labelledby="modalLabel" aria-hidden="true">
+    <form action="{% url 'tasks.create' %}" class="ajax-basic-form" method="post">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="modalLabel">Create Task</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <label for="title" class="form-label">Title</label>
+                        <input name="title" type="text" class="form-control" id="title" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="desc" class="form-label">Description</label>
+                        <textarea name="description" class="form-control" id="desc" rows="3"></textarea>
+                    </div>
+                    <div class="mb-3">
+                        <select name="state" class="form-select" aria-label="Default select example">
+                            <option selected disabled>Select States</option>
+                            {% for state in states %}
+                            <option value="{{ state.0 }}">{{ state.1 }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="complete" class="form-label">Completed</label>
+                        <div class="form-check">
+                            <input name="complete" id="complete" class="form-check-input" type="checkbox">
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-sm btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="submit" class="btn btn-sm btn-success"><i class="fa-solid fa-floppy-disk"></i>
+                        Save</button>
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
+
 <div class="card">
     <div class="card-header bg-success text-white">
         Task List
     </div>
     <div class="card-body">
         <table class="table table-hover">
-            <a href="{% url 'tasks.create' %}" class="btn-sm btn btn-success my-2"><i class="fa fa-plus"></i> New Task</a>
+            <button data-bs-toggle="modal" data-bs-target="#modal" class="btn-sm btn btn-success my-2"><i
+                    class="fa fa-plus"></i> New Task</button>
             <hr>
             <thead>
                 <tr>
+                    <th>ID</th>
                     <th>Task</th>
                     <th>Description</th>
+                    <th>Member</th>
+                    <th>State</th>
                     <th>Completed</th>
                     <th>Options</th>
                 </tr>
@@ -19,24 +66,71 @@
             <tbody>
                 {% for task in tasks %}
                 <tr>
+                    <td>{{task.id}}</td>
                     <td>{{task.title}}</td>
                     <td>{{task.description}}</td>
+                    <td>{{task.user.name}}</td>
+                    <td>{{task.state|title}}</td>
                     <td>
                         <div class="form-check">
                             <input class="form-check-input" type="checkbox" {{ task.complete|yesno:"checked,''" }}>
                         </div>
                     </td>
                     <td>
-                        <a class="btn btn-warning btn-sm" href="{% url 'tasks.update' task.id %}"><i class="fa fa-edit"></i> Edit</a>
+                        <a class="btn btn-warning btn-sm" href="{% url 'tasks.update' task.id %}"><i
+                                class="fa fa-edit"></i> Edit</a>
                     </td>
                 </tr>
                 {% empty %}
-                <tr>
-                    <td>No data</td>
+                <tr class="text-center">
+                    <td colspan="6">No data available in table</td>
                 </tr>
                 {% endfor %}
             </tbody>
         </table>
     </div>
 </div>
+
+{%endblock%}
+{%block javascript%}
+<script>
+    var table = $('.table').DataTable({
+        orders: []
+    });
+
+    function insertTr(data) {
+        table.row.add([
+            data.id,
+            data.title,
+            data.description,
+            '',
+            titleCase(data.state),
+            `<td>
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" ${data.complete== true ? 'checked' : ''}>
+                </div>
+            </td>`,
+            `<td> 
+                <a class="btn btn-warning btn-sm" href="">
+                    <i class="fa fa-edit"></i> Edit</a>
+            </td>`
+        ])
+        .draw()
+    }
+
+    $(document).ready(function () {
+        $('form').submit(function (e) {
+            e.preventDefault()
+            const url = $(this).attr('action');
+            const formData = $(this).serialize()
+
+            $.post(url, formData)
+                .done(function (res) {
+                    $('#modal').modal('hide');
+                    insertTr(res.data)
+                });
+        });
+
+    });
+</script>
 {%endblock%}

@@ -18,6 +18,14 @@
                         <textarea name="description" class="form-control" id="desc" rows="3"></textarea>
                     </div>
                     <div class="mb-3">
+                        <select name="state" class="form-select" aria-label="Default select example">
+                            <option selected disabled>Select States</option>
+                            {% for state in states %}
+                                <option value="{{ state.0 }}">{{ state.1 }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="mb-3">
                         <label for="complete" class="form-label">Completed</label>
                         <div class="form-check">
                             <input name="complete" id="complete" class="form-check-input" type="checkbox">
